@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>タイマーアプリ</title>
+    <style>
+        body {
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: sans-serif;
+            color: #000;
+            user-select: none; /* 誤操作防止 */
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .display-area {
+            border: 4px solid #000;
+            padding: 10px 40px;
+            background: #fff;
+        }
+
+        .timer-numbers {
+            font-size: 6rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .input-wrapper {
+            border: 4px solid #000;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            background: #fff;
+        }
+
+        input[type="number"] {
+            width: 80px;
+            height: 50px;
+            border: none;
+            font-size: 2rem;
+            text-align: center;
+            outline: none;
+            font-weight: bold;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .circle-btn {
+            width: 140px;
+            height: 140px;
+            border: 4px solid #000;
+            border-radius: 50%;
+            background: #fff;
+            color: #000;
+            font-size: 1.4rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            line-height: 1.2;
+            transition: background-color 0.1s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .circle-btn:active {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="display-area">
+        <div class="timer-numbers" id="display">00:00</div>
+    </div>
+
+    <div class="input-row">
+        <div class="input-wrapper">
+            <input type="number" id="minInput" value="0" min="0">
+        </div>
+        <span>分</span>
+        <div class="input-wrapper">
+            <input type="number" id="secInput" value="0" min="0" max="59">
+        </div>
+        <span>秒</span>
+    </div>
+
+    <div class="button-row">
+        <button id="startStopBtn" class="circle-btn">スタート<br>ストップ</button>
+        <button id="resetBtn" class="circle-btn">リセット</button>
+    </div>
+</div>
+
+<script>
+    let timeLeft = 0;
+    let timerId = null;
+    let alarmId = null; // 音の連打用
+    
+    const alarm = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+
+    const display = document.getElementById('display');
+    const minInput = document.getElementById('minInput');
+    const secInput = document.getElementById('secInput');
+    const startStopBtn = document.getElementById('startStopBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    function updateDisplay(seconds) {
+        const m = Math.floor(seconds / 60);
+        const s = seconds % 60;
+        display.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    // 音を止める処理を独立
+    function clearAllIntervals() {
+        if (timerId) {
+            clearInterval(timerId);
+            timerId = null;
+        }
+        if (alarmId) {
+            clearInterval(alarmId);
+            alarmId = null;
+        }
+        alarm.pause();
+        alarm.currentTime = 0;
+    }
+
+    function startAlarm() {
+        // 0.2秒（200ms）ごとに音を鳴らす
+        alarmId = setInterval(() => {
+            alarm.currentTime = 0;
+            alarm.play();
+        }, 100);
+    }
+
+    startStopBtn.addEventListener('click', () => {
+        // もし音が鳴っている、またはカウントダウン中なら「停止」
+        if (alarmId || timerId) {
+            clearAllIntervals();
+            return;
+        }
+
+        // スタート処理
+        if (timeLeft <= 0) {
+            const m = parseInt(minInput.value) || 0;
+            const s = parseInt(secInput.value) || 0;
+            timeLeft = m * 60 + s;
+        }
+
+        if (timeLeft <= 0) return;
+
+        timerId = setInterval(() => {
+            timeLeft--;
+            updateDisplay(timeLeft);
+            if (timeLeft <= 0) {
+                clearInterval(timerId);
+                timerId = null;
+                startAlarm(); // 爆速アラーム開始
+            }
+        }, 1000);
+    });
+
+    resetBtn.addEventListener('click', () => {
+        clearAllIntervals();
+        timeLeft = 0;
+        updateDisplay(0);
+        minInput.value = 0;
+        secInput.value = 0;
+    });
+</script>
+
+</body>
+</html>
