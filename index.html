@@ -20,7 +20,6 @@
             user-select: none;
         }
 
-        /* 言語切り替えボタンのスタイル */
         .lang-switcher {
             position: absolute;
             top: 20px;
@@ -105,6 +104,15 @@
         .circle-btn:active {
             background-color: #ddd;
         }
+
+        /* 追加：ダウンロードリンクのスタイル */
+        .download-link {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #000;
+            text-decoration: underline;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -131,22 +139,27 @@
         <button id="startStopBtn" class="circle-btn">スタート<br>ストップ</button>
         <button id="resetBtn" class="circle-btn">リセット</button>
     </div>
+
+    <a href="https://github.com/apptimer/apptimer.github.io/releases/download/timerapp/timerapp.Setup.1.0.0.exe" class="download-link" id="fullVersionLink">
+        このアプリの完全版はこちら
+    </a>
 </div>
 
 <script>
-    // 言語データ
     const i18n = {
         ja: {
             min: "分",
             sec: "秒",
             startStop: "スタート<br>ストップ",
-            reset: "リセット"
+            reset: "リセット",
+            fullVersion: "このアプリの完全版はこちら"
         },
         en: {
             min: "Min",
             sec: "Sec",
             startStop: "START<br>STOP",
-            reset: "RESET"
+            reset: "RESET",
+            fullVersion: "Full version of this app is here"
         }
     };
 
@@ -158,18 +171,17 @@
         document.getElementById('labelSec').textContent = i18n[lang].sec;
         document.getElementById('startStopBtn').innerHTML = i18n[lang].startStop;
         document.getElementById('resetBtn').textContent = i18n[lang].reset;
+        // リンクのテキストも更新
+        document.getElementById('fullVersionLink').textContent = i18n[lang].fullVersion;
     }
 
-    // ブラウザの言語設定をチェック
     const browserLang = navigator.language.startsWith('ja') ? 'ja' : 'en';
     setLanguage(browserLang);
 
-    // ボタンで切り替え
     document.getElementById('langBtn').addEventListener('click', () => {
         setLanguage(currentLang === 'ja' ? 'en' : 'ja');
     });
 
-    // --- タイマー処理（元のロジックを維持） ---
     let timeLeft = 0;
     let timerId = null;
     let alarmId = null;
